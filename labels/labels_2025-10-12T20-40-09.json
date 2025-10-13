@@ -1,29 +1,29 @@
 {
-    "frame_5.jpg": {
+    "frame_0": {
         "sports_activity": "surfing"
     },
-    "frame_4.jpg": {
+    "frame_1": {
         "sports_activity": "surfing"
     },
-    "frame_6.jpg": {
+    "frame_2": {
         "sports_activity": "surfing"
     },
-    "frame_7.jpg": {
+    "frame_3": {
         "sports_activity": "surfing"
     },
-    "frame_0.jpg": {
+    "frame_4": {
         "sports_activity": "surfing"
     },
-    "frame_3.jpg": {
+    "frame_5": {
         "sports_activity": "surfing"
     },
-    "frame_1.jpg": {
+    "frame_6": {
         "sports_activity": "surfing"
     },
-    "frame_2.jpg": {
+    "frame_7": {
         "sports_activity": "surfing"
     },
-    "frame_8.jpg": {
+    "frame_8": {
         "sports_activity": "surfing"
     }
 }

@@ -1,12 +1,14 @@
 import base64
 from openai import OpenAIError  # Import specific error for better handling
-from llm import LabelLLM
 from pathlib import Path
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 from collections import OrderedDict
 import pandas as pd
+from datetime import datetime
+
+from llm import LabelLLM
 
 
 class LabelGenerator(LabelLLM):
@@ -26,7 +28,15 @@ class LabelGenerator(LabelLLM):
         super().__init__(context_prompt_file, llm_deployment_name)
         self.input_dir = input_dir
         self.output_dir = output_dir
+        self.cache_dir = self.output_dir / "cache"
         self._validate_path()
+
+        # On startup, gather cached results from any previous failed run for resiliency.
+        if self.cache_dir.exists() and any(self.cache_dir.iterdir()):
+            print(
+                "💡 INFO: Leftover cache found. Gathering results from previous run..."
+            )
+            self.gather_json_from_cache()
 
     def _validate_path(self):
         if not (isinstance(self.input_dir, Path) and isinstance(self.output_dir, Path)):
@@ -98,13 +108,32 @@ class LabelGenerator(LabelLLM):
         # the exception will be propagated up to the caller.
         raw_response = self.generate_label_from_image(image_path)
 
-        # Parse the response and return the result
-        # If parsing fails, this will return None.
-        return self.parse_json_str(raw_response)
+        # Parse the response
+        # [Cache]: Save the JSON response to a file
+        parsed_response = self.parse_json_str(raw_response)
 
-    def generate_json_from_multiple_images(
-        self, max_workers: int = 10
-    ) -> OrderedDict[str, dict | None]:
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        # image_path.stem: file name without extension
+        cache_file_path = self.cache_dir / f"{image_path.stem}.json"
+        with cache_file_path.open("w", encoding="utf-8") as f:
+            json.dump(parsed_response, f, indent=4, ensure_ascii=False)
+        return parsed_response
+
+    def _get_processed_image_set(self) -> set:
+        """return a set of image names that have been processed from the output directory."""
+        processed_image_set = set()
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        for output_file in self.output_dir.glob("*.json"):
+            with output_file.open("r", encoding="utf-8") as f:
+                try:
+                    data = json.load(f)
+                    processed_image_set.update(data.keys())
+                except json.JSONDecodeError:
+                    print(f"❌ ERROR: Failed to load JSON file from '{output_file}'.")
+        return processed_image_set
+
+    def generate_json_from_multiple_images(self, max_workers: int = 10) -> None:
         """Generates JSON labels for multiple images concurrently using a thread pool.
 
         This method scans an input directory for image files, submits each image
@@ -116,19 +145,24 @@ class LabelGenerator(LabelLLM):
                 concurrent processing. Defaults to 10.
 
         Returns:
-            OrderedDict[str, dict | None]: An ordered dictionary mapping image
-                filenames to their corresponding JSON data (as a dict).
-            None : if no images are found in the input directory.
+            None
         """
         image_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"]
-        # self.input_dir.glob("*.jpg") returns a generator.
+        # 이미 처리된 이미지 이름의 Set
+        processed_image_set = self._get_processed_image_set()
+
         images = list(self.input_dir.glob("*.*"))
-        images = [image for image in images if image.suffix.lower() in image_extensions]
+        images = [
+            img
+            for img in images
+            if img.stem not in processed_image_set
+            and img.suffix.lower() in image_extensions
+        ]
         if not images:
             print(f"No images found in {self.input_dir}")
             return
 
-        results = OrderedDict()
+        print(f"INFO: Found {len(images)} new images to process.")
         # multi-threading
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # futures: Creates a dictionary mapping Future objects (keys) to their corresponding image Path objects (values).
@@ -148,9 +182,7 @@ class LabelGenerator(LabelLLM):
                 image = futures[future]
                 try:
                     # future.result(): Retrieves the actual result of the task, i.e., the return value from self.generate_json_from_image.
-                    response = future.result()
-                    # Stores the result in the results dictionary with the image name as the key.
-                    results[image.name] = response
+                    future.result()
                 except FileNotFoundError:
                     print(
                         f"❌ ERROR: File not found for '{image.name}'. Skipping this file."
@@ -166,12 +198,41 @@ class LabelGenerator(LabelLLM):
                 # Other unexpected errors.
                 except Exception as e:
                     print(f"❌ ERROR: Unexpected error for '{image.name}': {e}")
-        # save
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        output_file_path = self.output_dir / "labels.json"
+
+        # [cache]: load the JSON responses from the files
+        print("INFO: All images processed. Gathering results...")
+        self.gather_json_from_cache()
+
+    def gather_json_from_cache(self) -> None:
+        """Gathers JSON responses from the cache directory, saves to a final file, and robustly cleans up the cache."""
+        cache_files = sorted(self.cache_dir.glob("*.json"))
+
+        if not cache_files:
+            print("INFO: No cache files found. Nothing to gather.")
+            return
+
+        results = OrderedDict()
+
+        for cache_file in cache_files:
+            try:
+                with cache_file.open("r", encoding="utf-8") as f:
+                    # Object_pairs_hook=OrderedDict: Maintain the order of the items in the JSON file
+                    data = json.load(f, object_pairs_hook=OrderedDict)
+                    results[cache_file.stem] = data
+            except Exception as e:
+                print(f"❌ ERROR: Failed to load JSON file from '{cache_file}': {e}")
+            # exception is not raised
+            else:
+                # delete the cache file
+                cache_file.unlink()
+
+        # save the results to a file
+        timestamp = datetime.now().isoformat("T", "seconds").replace(":", "-")
+        output_file_path = self.output_dir / f"labels_{timestamp}.json"
         with output_file_path.open("w", encoding="utf-8") as f:
             json.dump(results, f, indent=4, ensure_ascii=False)
         print(f"Labels saved to {output_file_path}")
+        self.cache_dir.rmdir()
 
 
 def json_to_csv(json_file_path: Path) -> pd.DataFrame:
@@ -200,6 +261,6 @@ if __name__ == "__main__":
     # get the response from llm model
     label_generator.generate_json_from_multiple_images(max_workers=5)
 
-    label_path = output_dir / "labels.json"
-    df = json_to_csv(label_path)
-    print(df)
+    # label_path = output_dir / "labels.json"
+    # df = json_to_csv(label_path)
+    # print(df)
