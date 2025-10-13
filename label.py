@@ -159,7 +159,7 @@ class LabelGenerator(LabelLLM):
             and img.suffix.lower() in image_extensions
         ]
         if not images:
-            print(f"No images found in {self.input_dir}")
+            print(f"No new images found in {self.input_dir}")
             return
 
         print(f"INFO: Found {len(images)} new images to process.")
@@ -235,14 +235,58 @@ class LabelGenerator(LabelLLM):
         self.cache_dir.rmdir()
 
 
-def json_to_csv(json_file_path: Path) -> pd.DataFrame:
+def json_to_df(json_file_path: Path) -> pd.DataFrame:
     """Converts a JSON file to pandas DataFrame."""
-    with json_file_path.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-    # dict key -> index
-    df = pd.DataFrame.from_dict(data, orient="index").sort_index()
-    # df.to_csv(csv_file_path, index=True)
-    return df
+    try:
+        with json_file_path.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        # dict key -> index
+        df = pd.DataFrame.from_dict(data, orient="index").sort_index()
+        return df
+    except FileNotFoundError:
+        print(f"❌ ERROR: File not found: {json_file_path}")
+        return pd.DataFrame()
+    except json.JSONDecodeError:
+        print(f"❌ ERROR: Failed to decode JSON file: {json_file_path}")
+        return pd.DataFrame()
+    except Exception as e:
+        print(f"❌ ERROR: Unexpected error: {e}")
+        return pd.DataFrame()
+
+
+def combine_jsons_to_single_df(
+    json_dir_path: Path, csv_file_path: Path | None = None
+) -> pd.DataFrame:
+    """
+    Finds all JSON files in a directory, reads them into DataFrames,
+    and concatenates them into a single DataFrame.
+    """
+    # 1. find all json files in the directory
+    json_files = list(json_dir_path.glob("*.json"))
+
+    if not json_files:
+        print(f"⚠️ No JSON files found in {json_dir_path}")
+        # return an empty dataframe
+        return pd.DataFrame()
+
+    # 2. convert json files to a dataframe list
+    df_list = []
+    for file in json_files:
+        df = json_to_df(file)
+        if not df.empty:
+            df_list.append(df)
+
+    if not df_list:
+        print("INFO: No valid data could be loaded from any JSON file.")
+        return pd.DataFrame()
+
+    # 3. sort the dataframe
+    combined_df = pd.concat(df_list).sort_index()
+    if csv_file_path:
+        combined_df.to_csv(csv_file_path, index=True)
+        print(f"Combined Data (csv) saved to {csv_file_path}")
+
+    return combined_df
 
 
 if __name__ == "__main__":
@@ -259,8 +303,9 @@ if __name__ == "__main__":
     )
 
     # get the response from llm model
-    label_generator.generate_json_from_multiple_images(max_workers=5)
+    # label_generator.generate_json_from_multiple_images(max_workers=5)
 
-    # label_path = output_dir / "labels.json"
-    # df = json_to_csv(label_path)
-    # print(df)
+    df = combine_jsons_to_single_df(
+        json_dir_path=output_dir, csv_file_path=output_dir / "labels.csv"
+    )
+    print(df)
