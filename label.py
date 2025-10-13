@@ -282,8 +282,10 @@ def combine_jsons_to_single_df(
 
     # 3. sort the dataframe
     combined_df = pd.concat(df_list).sort_index()
+    combined_df = combined_df.reset_index().rename(columns={"index": "img_name"})
+
     if csv_file_path:
-        combined_df.to_csv(csv_file_path, index=True)
+        combined_df.to_csv(csv_file_path, index=False)
         print(f"Combined Data (csv) saved to {csv_file_path}")
 
     return combined_df
