@@ -45,7 +45,7 @@ class AzureStorageManager:
         logging.info("AzureStorageManager initialized successfully.")
 
     def get_container_client(
-        self, container_name: str = "test", create_if_not_exists: bool = False
+        self, container_name: str = "data", create_if_not_exists: bool = False
     ) -> FileSystemClient:
         """
         Retrieves a client for a specific container (file system).
@@ -87,7 +87,7 @@ class AzureStorageManager:
             raise
 
     def look_up_files_in_directory(
-        self, azure_dir_to_search: str, container_name: str = "test"
+        self, azure_dir_to_search: str, container_name: str = "data"
     ):
         """
         Lists the files and subdirectories within a specified Azure directory.
@@ -114,7 +114,7 @@ class AzureStorageManager:
             logging.error(f"Error listing files in '{azure_dir_to_search}': {e}")
             raise
 
-    def delete_directory(self, azure_dir_to_delete: str, container_name: str = "test"):
+    def delete_directory(self, azure_dir_to_delete: str, container_name: str = "data"):
         """
         Deletes a directory and all its contents recursively.
 
@@ -144,7 +144,7 @@ class AzureStorageManager:
         self,
         local_files_dir: Path,
         azure_dir_to_upload: str,
-        container_name: str = "test",
+        container_name: str = "data",
         pattern: str | None = None,
     ):
         """
@@ -202,7 +202,7 @@ class AzureStorageManager:
         self,
         local_dir_to_save: Path,
         azure_dir_to_download: str,
-        container_name: str = "test",
+        container_name: str = "data",
     ):
         """
         Downloads all files from an Azure directory to a local directory.
@@ -240,7 +240,7 @@ class AzureStorageManager:
             logging.error(f"Error during file download: {e}")
             raise
 
-    def delete_file(self, file_path_to_delete: str, container_name: str = "test"):
+    def delete_file(self, file_path_to_delete: str, container_name: str = "data"):
         """
         Deletes a single file from a container.
 
@@ -271,6 +271,12 @@ if __name__ == "__main__":
     manager.upload_files(
         local_files_dir=Path("labels"),
         azure_dir_to_upload="labels",
-        container_name="test",
+        container_name="data",
         pattern="*.csv",
+    )
+
+    manager.upload_files(
+        local_files_dir=Path("frames"),
+        azure_dir_to_upload="images",
+        container_name="data",
     )

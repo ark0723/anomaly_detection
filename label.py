@@ -298,7 +298,7 @@ if __name__ == "__main__":
 
     # Instantiate the generator.
     label_generator = LabelGenerator(
-        llm_deployment_name="o4-mini-labeling",
+        llm_deployment_name="gpt-4.1-mini-labling-AI",
         context_prompt_file=context_prompt_file,
         input_dir=input_dir,
         output_dir=output_dir,

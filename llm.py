@@ -36,7 +36,7 @@ class LabelLLM:
     def __init__(
         self,
         context_prompt_file: Path,
-        llm_deployment_name: str = "o4-mini-labeling",
+        llm_deployment_name: str = "gpt-4.1-mini-labling-AI",
     ):
         """
         Initializes the LabelLLM client.

@@ -19,7 +19,4 @@ Classify the image into one of the following categories (or "other" if it does n
 
 ## Output Format
 Return the result only in valid JSON as follows:
-
-```json
-{"sports_activity": "<predicted_sport>"}
-```
+    {"sports_activity": "<predicted_sport>"}
