@@ -12,7 +12,7 @@ FastAPI-based anomaly detection system for video frames, deployed as an alternat
 ### Jupyter Notebook
 📓 **[Interactive Testing Notebook](notebook/07_deployment.ipynb)** - Run this notebook to see live predictions with HTML visualization
 
-![Prediction Results](assets/prediction_results.png)
+![Prediction Results](assets/prediction_results_v2.png)
 
 *Real-time anomaly detection results showing normal frames (green border) and anomalous frames (red border) with confidence scores.*
 
