@@ -5,9 +5,15 @@ FastAPI-based anomaly detection system for video frames, deployed as an alternat
 
 ## 📊 Prediction Results
 
+### 🎥 Demo Video
+🎬 **[Watch Demo Video](https://github.com/ark0723/anomaly_detection/releases/latest/download/demo_video.mp4)** (7.5MB)
+
+*Live demonstration of the Streamlit web interface with drag & drop image upload and real-time anomaly detection results*
+
+> **Note:** Video is hosted in GitHub Releases to avoid LFS costs
+
 ### Interactive Demo
 🔗 **[View Live Results](https://ark0723.github.io/anomaly_detection/)** (GitHub Pages)
-
 
 ### Jupyter Notebook
 📓 **[Interactive Testing Notebook](notebook/07_deployment.ipynb)** - Run this notebook to see live predictions with HTML visualization
@@ -28,26 +34,50 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Start API Server
+### 2. Download Model (One-time setup)
 ```bash
-python api.py
-# or
-uvicorn api:app --host 0.0.0.0 --port 8000
+# Download model from Databricks to local storage
+python download_model.py
 ```
 
-### 3. Test with Client
+### 3. Start API Server
+```bash
+# Option A: Local model (recommended - no Databricks dependency)
+python api_local.py
+
+# Option B: Databricks model (requires active Databricks workspace)
+python api.py
+```
+
+### 4. Test with Client
 ```bash
 python client.py
 ```
 
-### 4. Interactive Testing
+### 5. Interactive Testing
+
+#### Option A: Jupyter Notebook
 Open `notebook/07_deployment.ipynb` for interactive testing with HTML visualization.
+
+#### Option B: Web Interface (Upload Your Own Images) 🆕
+```bash
+# Install Streamlit (if not already installed)
+pip install streamlit
+
+# Start the API server first
+python api.py
+
+# In another terminal, run the web interface
+streamlit run web_interface.py
+```
+Then open your browser to `http://localhost:8501` and upload your own images for real-time predictions!
 
 ## 📁 Project Structure
 ```
 anomaly_detection/
 ├── api.py                 # FastAPI server
 ├── client.py              # API client for testing
+├── web_interface.py       # Streamlit web interface for image upload
 ├── frames/                # Sample images
 ├── notebook/              # Jupyter notebooks
 │   └── 07_deployment.ipynb # Interactive testing & visualization
@@ -58,6 +88,7 @@ anomaly_detection/
 - **Base64 Image Processing**: Handles multiple images in batch
 - **Real-time Predictions**: Fast inference with CPU optimization
 - **Visual Results**: Color-coded prediction display
+- **Web Interface**: Drag & drop image upload with Streamlit
 - **Error Handling**: Comprehensive logging and fallback mechanisms
 
 ## 🎯 API Endpoints
