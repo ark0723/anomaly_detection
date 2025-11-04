@@ -1,0 +1,19 @@
+# GitHub Pages configuration
+title: "Anomaly Detection API"
+description: "Real-time video frame anomaly detection using FastAPI and Transformers"
+url: "https://your-username.github.io"
+baseurl: "/anomaly_detection"
+
+# Theme (optional)
+theme: minima
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# Exclude files
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
