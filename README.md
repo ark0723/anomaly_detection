@@ -10,7 +10,7 @@ FastAPI-based anomaly detection system for video frames, deployed as an alternat
 
 *Live demonstration of the Streamlit web interface with drag & drop image upload and real-time anomaly detection results*
 
-> **Note:** Video is hosted in GitHub Releases to avoid LFS costs
+> **Note:** Video is hosted in GitHub Releases
 
 ### Interactive Demo
 🔗 **[View Live Results](https://ark0723.github.io/anomaly_detection/)** (GitHub Pages)
