@@ -128,9 +128,9 @@ def main():
         st.markdown("## 🛠️ Setup Instructions")
         st.markdown(
             """
-        1. **Start the API server:**
+        1. **Start the local API server:**
         ```bash
-        python api.py
+        python api_local.py
         ```
         
         2. **Upload images** using the file uploader
@@ -138,6 +138,8 @@ def main():
         3. **Click 'Run Prediction'** to get results
         
         4. **View results** with confidence scores
+        
+        > **Note:** Only `api_local.py` is available (Azure Databricks deleted)
         """
         )
 

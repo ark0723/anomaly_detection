@@ -1,7 +1,7 @@
 # Anomaly Detection API
 
 ## 🚀 Overview
-FastAPI-based anomaly detection system for video frames, deployed as an alternative to Azure Databricks model serving (unavailable in free tier).
+FastAPI-based anomaly detection system for video frames, running completely locally with no cloud dependencies. Originally developed on Azure Databricks, now fully independent for cost-free operation.
 
 ## 📊 Prediction Results
 
@@ -43,12 +43,11 @@ python download_model.py
 
 ### 3. Start API Server
 ```bash
-# Option A: Local model (recommended - no Databricks dependency)
+# Use local model (Databricks-independent)
 python api_local.py
-
-# Option B: Databricks model (requires active Databricks workspace)
-python api.py
 ```
+
+> **Note:** `api.py` is no longer available as the Azure Databricks workspace has been deleted. Only `api_local.py` works with the downloaded local model.
 
 ### 4. Test with Client
 ```bash
@@ -65,8 +64,8 @@ Open `notebook/07_deployment.ipynb` for interactive testing with HTML visualizat
 # Install Streamlit (if not already installed)
 pip install streamlit
 
-# Start the API server first
-python api.py
+# Start the local API server first
+python api_local.py
 
 # In another terminal, run the web interface
 streamlit run web_interface.py
@@ -86,11 +85,13 @@ anomaly_detection/
 ```
 
 ## 🔧 Features
-- **Base64 Image Processing**: Handles multiple images in batch
-- **Real-time Predictions**: Fast inference with CPU optimization
-- **Visual Results**: Color-coded prediction display
-- **Web Interface**: Drag & drop image upload with Streamlit
-- **Error Handling**: Comprehensive logging and fallback mechanisms
+- **🏠 Fully Local**: No cloud dependencies or costs
+- **📤 Base64 Image Processing**: Handles multiple images in batch
+- **⚡ Real-time Predictions**: Fast inference with CPU optimization
+- **🎨 Visual Results**: Color-coded prediction display
+- **🌐 Web Interface**: Drag & drop image upload with Streamlit
+- **🛡️ Error Handling**: Comprehensive logging and fallback mechanisms
+- **💰 Cost-Free**: Zero ongoing operational costs
 
 ## 🎯 API Endpoints
 - `GET /`: Health check
