@@ -24,8 +24,8 @@ def download_model():
     
     try:
         # Create local models directory
-        local_model_path = Path("models/anomaly_detection_model")
-        local_model_path.parent.mkdir(exist_ok=True)
+        models_dir = Path("models")
+        models_dir.mkdir(exist_ok=True)
         
         # Download model using MLflow
         print("📥 Downloading model artifacts...")

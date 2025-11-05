@@ -14,7 +14,7 @@ from pydantic import BaseModel
 import uvicorn
 
 # --- Local Model Configuration ---
-LOCAL_MODEL_PATH = "models/anomaly_detection_model"
+LOCAL_MODEL_PATH = "models/model"
 MODEL_INFO_PATH = "models/model_info.json"
 
 def load_local_model():

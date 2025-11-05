@@ -37,6 +37,7 @@ pip install -r requirements.txt
 ### 2. Download Model (One-time setup)
 ```bash
 # Download model from Databricks to local storage
+# This creates models/model/ directory with the MLflow model
 python download_model.py
 ```
 
